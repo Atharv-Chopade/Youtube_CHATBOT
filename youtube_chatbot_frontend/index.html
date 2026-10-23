@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YouTube AI Chatbot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#">
+        <span class="brand-icon">▶</span>
+        <span>YouTube<span class="brand-light">AI</span></span>
+      </a>
+      <div class="sidebar-label">WORKSPACE</div>
+      <button class="nav-item active"><span>✦</span> Video Chat</button>
+      <div class="sidebar-card">
+        <div class="sidebar-card-icon">⌁</div>
+        <h3>Ask your video</h3>
+        <p>Turn long videos into answers, summaries, and insights.</p>
+      </div>
+      <div class="sidebar-bottom">
+        <div class="status-dot"></div>
+        <div><strong>RAG engine</strong><small id="engineStatus">Waiting for a video</small></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <div class="eyebrow">YOUR PERSONAL VIDEO ASSISTANT</div>
+          <h1>Chat with any <span>YouTube video.</span></h1>
+          <p class="subtitle">Paste a link. Ask anything. Get answers grounded in the transcript.</p>
+        </div>
+        <button class="settings-button" id="settingsToggle" aria-label="Open settings">⚙ <span>Settings</span></button>
+      </header>
+
+      <section class="load-card">
+        <div class="section-heading">
+          <div class="step-number">01</div>
+          <div><h2>Connect a video</h2><p>We'll fetch the captions and prepare them for questions.</p></div>
+        </div>
+        <form id="loadForm" class="url-form">
+          <label class="input-wrap">
+            <span class="input-icon">↗</span>
+            <input id="youtubeUrl" type="url" placeholder="https://www.youtube.com/watch?v=..." required />
+          </label>
+          <button id="loadButton" class="primary-button" type="submit"><span>Load video</span><span>→</span></button>
+        </form>
+        <div id="loadStatus" class="status-message" role="status"></div>
+      </section>
+
+      <section class="workspace">
+        <div class="video-column">
+          <div class="section-heading compact">
+            <div class="step-number">02</div>
+            <div><h2>Video preview</h2><p>Your source material</p></div>
+          </div>
+          <div class="video-frame empty" id="videoFrame">
+            <div class="play-orb">▶</div>
+            <strong>Your video appears here</strong>
+            <span>Load a YouTube video to get started</span>
+          </div>
+          <div class="video-meta" id="videoMeta">
+            <div class="video-meta-icon">▣</div>
+            <div><strong>No video loaded</strong><small>Waiting for a YouTube link</small></div>
+          </div>
+          <div class="pipeline-card">
+            <div class="pipeline-title">HOW IT WORKS <span class="live-pill">RAG PIPELINE</span></div>
+            <div class="pipeline-step"><span>01</span><div><strong>Transcript</strong><small>Fetch captions from YouTube</small></div><i>↘</i></div>
+            <div class="pipeline-step"><span>02</span><div><strong>Semantic search</strong><small>Find relevant transcript chunks</small></div><i>↘</i></div>
+            <div class="pipeline-step"><span>03</span><div><strong>AI answer</strong><small>Groq responds using context</small></div><i>✦</i></div>
+          </div>
+        </div>
+
+        <div class="chat-column">
+          <div class="chat-header">
+            <div class="chat-avatar">✦</div>
+            <div><h2>Video assistant</h2><p><span class="status-dot"></span> <span id="chatStatus">Ready when you are</span></p></div>
+            <button class="clear-button" id="clearChat" title="Clear conversation">↺ <span>Clear</span></button>
+          </div>
+          <div class="chat-messages" id="chatMessages" aria-live="polite">
+            <div class="welcome-message" id="welcomeMessage">
+              <div class="welcome-sparkle">✦</div>
+              <h3>What would you like to know?</h3>
+              <p>Once your video is loaded, ask a question about its content.</p>
+              <div class="suggestions">
+                <button class="suggestion" data-question="Summarize this video">✧ <span>Summarize this video</span> <b>↗</b></button>
+                <button class="suggestion" data-question="What are the main points?">☷ <span>What are the main points?</span> <b>↗</b></button>
+                <button class="suggestion" data-question="Explain the key concepts simply">◉ <span>Explain the key concepts simply</span> <b>↗</b></button>
+              </div>
+            </div>
+          </div>
+          <form class="chat-composer" id="chatForm">
+            <textarea id="questionInput" rows="1" placeholder="Load a video first, then ask a question..." disabled></textarea>
+            <div class="composer-bottom">
+              <span><span class="tiny-lock">⌑</span> Answers are based on video captions</span>
+              <button id="sendButton" class="send-button" type="submit" disabled>↑</button>
+            </div>
+          </form>
+          <div class="chat-footnote">AI can make mistakes. Check important details against the original video.</div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="settingsDialog" class="settings-dialog">
+    <form method="dialog" class="dialog-top"><div><span class="eyebrow">PREFERENCES</span><h2>Chatbot settings</h2></div><button class="close-dialog" aria-label="Close settings">×</button></form>
+    <div class="setting-field"><label for="apiKey">Groq API key <span>Optional if set in backend .env</span></label><input id="apiKey" type="password" placeholder="gsk_••••••••••••••••" autocomplete="off"></div>
+    <div class="setting-field"><label for="modelName">Groq model name</label><input id="modelName" type="text" value="openai/gpt-oss-120b"></div>
+    <p class="settings-note">The API key is sent only to your local backend when you load a video. For a deployed app, prefer keeping the key in the backend environment.</p>
+    <button id="saveSettings" class="primary-button full-width" type="button">Save settings <span>✓</span></button>
+  </dialog>
+  <script src="app.js"></script>
+</body>
+</html>
